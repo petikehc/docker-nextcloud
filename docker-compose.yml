@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    restart: always
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    env_file:
+      - db.env
+    networks:
+      - internal_network
+
+  redis:
+    image: redis:alpine
+    restart: always
+    networks:
+      - internal_network
+
+  app:
+    image: nextcloud:fpm
+    restart: always
+    volumes:
+      - ./app:/var/www/html
+    environment:
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+    env_file:
+      - db.env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+
+  cron:
+    image: nextcloud:fpm
+    restart: always
+    volumes:
+      - ./app:/var/www/html
+    entrypoint: /cron.sh
+    depends_on:
+      - db
+      - redis
+    networks:
+      - internal_network
+
+      
+networks:
+  external_network:
+  internal_network:
+    internal: true
