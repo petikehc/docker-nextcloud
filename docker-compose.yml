@@ -13,7 +13,7 @@ services:
       - internal_network
 
   redis:
-    image: redis:alpine
+    image: redis:5-alpine
     restart: always
     networks:
       - internal_network
@@ -22,7 +22,8 @@ services:
     image: nextcloud:fpm
     restart: always
     volumes:
-      - ./app:/var/www/html
+      - data:/var/www/html
+      # - ./app:/var/www/html
     environment:
       - MYSQL_HOST=db
       - REDIS_HOST=redis
@@ -39,7 +40,8 @@ services:
     image: nextcloud:fpm
     restart: always
     volumes:
-      - ./app:/var/www/html
+      - data:/var/www/html
+      # - ./app:/var/www/html
     entrypoint: /cron.sh
     depends_on:
       - db
@@ -47,6 +49,8 @@ services:
     networks:
       - internal_network
 
+volumes:
+  data:
       
 networks:
   external_network:
